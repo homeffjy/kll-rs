@@ -4,10 +4,13 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-use libc::{c_void, size_t};
+extern crate libc;
 
-// Include the generated bindings
-include!(env!("BINDING_PATH"));
+use std::os::raw::c_void;
+pub use libc::size_t;
+
+// Include the generated bindings (if available)
+// include!(env!("BINDING_PATH"));
 
 // FFI-safe opaque types
 #[repr(C)]
@@ -19,69 +22,69 @@ pub struct KllDoubleSketch(c_void);
 // Re-export the generated functions with proper types
 extern "C" {
     // KLL Float Sketch functions
-    pub fn kll_float_sketch_new() -> *mut KllFloatSketch;
-    pub fn kll_float_sketch_new_with_k(k: u16) -> *mut KllFloatSketch;
-    pub fn kll_float_sketch_delete(sketch: *mut KllFloatSketch);
+    pub fn kll_float_sketch_new() -> *mut c_void;
+    pub fn kll_float_sketch_new_with_k(k: u16) -> *mut c_void;
+    pub fn kll_float_sketch_delete(sketch: *mut c_void);
     
-    pub fn kll_float_sketch_update(sketch: *mut KllFloatSketch, value: f32);
-    pub fn kll_float_sketch_merge(sketch: *mut KllFloatSketch, other: *const KllFloatSketch);
+    pub fn kll_float_sketch_update(sketch: *mut c_void, value: f32);
+    pub fn kll_float_sketch_merge(sketch: *mut c_void, other: *mut c_void);
     
-    pub fn kll_float_sketch_is_empty(sketch: *const KllFloatSketch) -> bool;
-    pub fn kll_float_sketch_get_k(sketch: *const KllFloatSketch) -> u16;
-    pub fn kll_float_sketch_get_n(sketch: *const KllFloatSketch) -> u64;
-    pub fn kll_float_sketch_get_num_retained(sketch: *const KllFloatSketch) -> u32;
-    pub fn kll_float_sketch_is_estimation_mode(sketch: *const KllFloatSketch) -> bool;
+    pub fn kll_float_sketch_is_empty(sketch: *mut c_void) -> bool;
+    pub fn kll_float_sketch_get_k(sketch: *mut c_void) -> u16;
+    pub fn kll_float_sketch_get_n(sketch: *mut c_void) -> u64;
+    pub fn kll_float_sketch_get_num_retained(sketch: *mut c_void) -> u32;
+    pub fn kll_float_sketch_is_estimation_mode(sketch: *mut c_void) -> bool;
     
-    pub fn kll_float_sketch_get_min_value(sketch: *const KllFloatSketch) -> f32;
-    pub fn kll_float_sketch_get_max_value(sketch: *const KllFloatSketch) -> f32;
-    pub fn kll_float_sketch_get_quantile(sketch: *const KllFloatSketch, fraction: f64) -> f32;
-    pub fn kll_float_sketch_get_rank(sketch: *const KllFloatSketch, value: f32) -> f64;
+    pub fn kll_float_sketch_get_min_value(sketch: *mut c_void) -> f32;
+    pub fn kll_float_sketch_get_max_value(sketch: *mut c_void) -> f32;
+    pub fn kll_float_sketch_get_quantile(sketch: *mut c_void, fraction: f64) -> f32;
+    pub fn kll_float_sketch_get_rank(sketch: *mut c_void, value: f32) -> f64;
     
-    pub fn kll_float_sketch_serialize(sketch: *const KllFloatSketch, size: *mut size_t) -> *mut u8;
-    pub fn kll_float_sketch_deserialize(data: *const u8, size: size_t) -> *mut KllFloatSketch;
+    pub fn kll_float_sketch_serialize(sketch: *mut c_void, size: *mut size_t) -> *mut u8;
+    pub fn kll_float_sketch_deserialize(data: *const u8, size: size_t) -> *mut c_void;
     
     pub fn kll_float_sketch_get_quantiles(
-        sketch: *const KllFloatSketch,
+        sketch: *mut c_void,
         fractions: *const f64,
         num_fractions: size_t,
         results: *mut f32,
     );
     pub fn kll_float_sketch_get_quantiles_evenly_spaced(
-        sketch: *const KllFloatSketch,
+        sketch: *mut c_void,
         num: u32,
         results: *mut f32,
     );
     
     // KLL Double Sketch functions
-    pub fn kll_double_sketch_new() -> *mut KllDoubleSketch;
-    pub fn kll_double_sketch_new_with_k(k: u16) -> *mut KllDoubleSketch;
-    pub fn kll_double_sketch_delete(sketch: *mut KllDoubleSketch);
+    pub fn kll_double_sketch_new() -> *mut c_void;
+    pub fn kll_double_sketch_new_with_k(k: u16) -> *mut c_void;
+    pub fn kll_double_sketch_delete(sketch: *mut c_void);
     
-    pub fn kll_double_sketch_update(sketch: *mut KllDoubleSketch, value: f64);
-    pub fn kll_double_sketch_merge(sketch: *mut KllDoubleSketch, other: *const KllDoubleSketch);
+    pub fn kll_double_sketch_update(sketch: *mut c_void, value: f64);
+    pub fn kll_double_sketch_merge(sketch: *mut c_void, other: *mut c_void);
     
-    pub fn kll_double_sketch_is_empty(sketch: *const KllDoubleSketch) -> bool;
-    pub fn kll_double_sketch_get_k(sketch: *const KllDoubleSketch) -> u16;
-    pub fn kll_double_sketch_get_n(sketch: *const KllDoubleSketch) -> u64;
-    pub fn kll_double_sketch_get_num_retained(sketch: *const KllDoubleSketch) -> u32;
-    pub fn kll_double_sketch_is_estimation_mode(sketch: *const KllDoubleSketch) -> bool;
+    pub fn kll_double_sketch_is_empty(sketch: *mut c_void) -> bool;
+    pub fn kll_double_sketch_get_k(sketch: *mut c_void) -> u16;
+    pub fn kll_double_sketch_get_n(sketch: *mut c_void) -> u64;
+    pub fn kll_double_sketch_get_num_retained(sketch: *mut c_void) -> u32;
+    pub fn kll_double_sketch_is_estimation_mode(sketch: *mut c_void) -> bool;
     
-    pub fn kll_double_sketch_get_min_value(sketch: *const KllDoubleSketch) -> f64;
-    pub fn kll_double_sketch_get_max_value(sketch: *const KllDoubleSketch) -> f64;
-    pub fn kll_double_sketch_get_quantile(sketch: *const KllDoubleSketch, fraction: f64) -> f64;
-    pub fn kll_double_sketch_get_rank(sketch: *const KllDoubleSketch, value: f64) -> f64;
+    pub fn kll_double_sketch_get_min_value(sketch: *mut c_void) -> f64;
+    pub fn kll_double_sketch_get_max_value(sketch: *mut c_void) -> f64;
+    pub fn kll_double_sketch_get_quantile(sketch: *mut c_void, fraction: f64) -> f64;
+    pub fn kll_double_sketch_get_rank(sketch: *mut c_void, value: f64) -> f64;
     
-    pub fn kll_double_sketch_serialize(sketch: *const KllDoubleSketch, size: *mut size_t) -> *mut u8;
-    pub fn kll_double_sketch_deserialize(data: *const u8, size: size_t) -> *mut KllDoubleSketch;
+    pub fn kll_double_sketch_serialize(sketch: *mut c_void, size: *mut size_t) -> *mut u8;
+    pub fn kll_double_sketch_deserialize(data: *const u8, size: size_t) -> *mut c_void;
     
     pub fn kll_double_sketch_get_quantiles(
-        sketch: *const KllDoubleSketch,
+        sketch: *mut c_void,
         fractions: *const f64,
         num_fractions: size_t,
         results: *mut f64,
     );
     pub fn kll_double_sketch_get_quantiles_evenly_spaced(
-        sketch: *const KllDoubleSketch,
+        sketch: *mut c_void,
         num: u32,
         results: *mut f64,
     );

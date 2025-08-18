@@ -3,7 +3,7 @@
  */
 
 #include "wrapper.h"
-#include "kll_sketch.hpp"
+#include "datasketches-cpp/kll/include/kll_sketch.hpp"
 #include <memory>
 #include <cstring>
 
@@ -12,35 +12,35 @@ using datasketches::kll_sketch;
 // KLL Float Sketch implementation
 extern "C" {
 
-kll_float_sketch_t* kll_float_sketch_new(void) {
+kll_float_sketch_t kll_float_sketch_new(void) {
     try {
-        return new kll_sketch<float>();
+        return static_cast<void*>(new kll_sketch<float>());
     } catch (...) {
         return nullptr;
     }
 }
 
-kll_float_sketch_t* kll_float_sketch_new_with_k(uint16_t k) {
+kll_float_sketch_t kll_float_sketch_new_with_k(uint16_t k) {
     try {
-        return new kll_sketch<float>(k);
+        return static_cast<void*>(new kll_sketch<float>(k));
     } catch (...) {
         return nullptr;
     }
 }
 
-void kll_float_sketch_delete(kll_float_sketch_t* sketch) {
+void kll_float_sketch_delete(kll_float_sketch_t sketch) {
     if (sketch) {
         delete static_cast<kll_sketch<float>*>(sketch);
     }
 }
 
-void kll_float_sketch_update(kll_float_sketch_t* sketch, float value) {
+void kll_float_sketch_update(kll_float_sketch_t sketch, float value) {
     if (sketch) {
         static_cast<kll_sketch<float>*>(sketch)->update(value);
     }
 }
 
-void kll_float_sketch_merge(kll_float_sketch_t* sketch, const kll_float_sketch_t* other) {
+void kll_float_sketch_merge(kll_float_sketch_t sketch, kll_float_sketch_t other) {
     if (sketch && other) {
         static_cast<kll_sketch<float>*>(sketch)->merge(
             *static_cast<const kll_sketch<float>*>(other)
@@ -48,70 +48,70 @@ void kll_float_sketch_merge(kll_float_sketch_t* sketch, const kll_float_sketch_t
     }
 }
 
-bool kll_float_sketch_is_empty(const kll_float_sketch_t* sketch) {
+bool kll_float_sketch_is_empty(kll_float_sketch_t sketch) {
     if (sketch) {
         return static_cast<const kll_sketch<float>*>(sketch)->is_empty();
     }
     return true;
 }
 
-uint16_t kll_float_sketch_get_k(const kll_float_sketch_t* sketch) {
+uint16_t kll_float_sketch_get_k(kll_float_sketch_t sketch) {
     if (sketch) {
         return static_cast<const kll_sketch<float>*>(sketch)->get_k();
     }
     return 0;
 }
 
-uint64_t kll_float_sketch_get_n(const kll_float_sketch_t* sketch) {
+uint64_t kll_float_sketch_get_n(kll_float_sketch_t sketch) {
     if (sketch) {
         return static_cast<const kll_sketch<float>*>(sketch)->get_n();
     }
     return 0;
 }
 
-uint32_t kll_float_sketch_get_num_retained(const kll_float_sketch_t* sketch) {
+uint32_t kll_float_sketch_get_num_retained(kll_float_sketch_t sketch) {
     if (sketch) {
         return static_cast<const kll_sketch<float>*>(sketch)->get_num_retained();
     }
     return 0;
 }
 
-bool kll_float_sketch_is_estimation_mode(const kll_float_sketch_t* sketch) {
+bool kll_float_sketch_is_estimation_mode(kll_float_sketch_t sketch) {
     if (sketch) {
         return static_cast<const kll_sketch<float>*>(sketch)->is_estimation_mode();
     }
     return false;
 }
 
-float kll_float_sketch_get_min_value(const kll_float_sketch_t* sketch) {
+float kll_float_sketch_get_min_value(kll_float_sketch_t sketch) {
     if (sketch) {
         return static_cast<const kll_sketch<float>*>(sketch)->get_min_value();
     }
     return 0.0f;
 }
 
-float kll_float_sketch_get_max_value(const kll_float_sketch_t* sketch) {
+float kll_float_sketch_get_max_value(kll_float_sketch_t sketch) {
     if (sketch) {
         return static_cast<const kll_sketch<float>*>(sketch)->get_max_value();
     }
     return 0.0f;
 }
 
-float kll_float_sketch_get_quantile(const kll_float_sketch_t* sketch, double fraction) {
+float kll_float_sketch_get_quantile(kll_float_sketch_t sketch, double fraction) {
     if (sketch) {
         return static_cast<const kll_sketch<float>*>(sketch)->get_quantile(fraction);
     }
     return 0.0f;
 }
 
-double kll_float_sketch_get_rank(const kll_float_sketch_t* sketch, float value) {
+double kll_float_sketch_get_rank(kll_float_sketch_t sketch, float value) {
     if (sketch) {
         return static_cast<const kll_sketch<float>*>(sketch)->get_rank(value);
     }
     return 0.0;
 }
 
-uint8_t* kll_float_sketch_serialize(const kll_float_sketch_t* sketch, size_t* size) {
+uint8_t* kll_float_sketch_serialize(kll_float_sketch_t sketch, size_t* size) {
     if (!sketch || !size) {
         return nullptr;
     }
@@ -127,20 +127,20 @@ uint8_t* kll_float_sketch_serialize(const kll_float_sketch_t* sketch, size_t* si
     }
 }
 
-kll_float_sketch_t* kll_float_sketch_deserialize(const uint8_t* data, size_t size) {
+kll_float_sketch_t kll_float_sketch_deserialize(const uint8_t* data, size_t size) {
     if (!data || size == 0) {
         return nullptr;
     }
     
     try {
         auto sketch = kll_sketch<float>::deserialize(data, size);
-        return new kll_sketch<float>(std::move(sketch));
+        return static_cast<void*>(new kll_sketch<float>(std::move(sketch)));
     } catch (...) {
         return nullptr;
     }
 }
 
-void kll_float_sketch_get_quantiles(const kll_float_sketch_t* sketch, 
+void kll_float_sketch_get_quantiles(kll_float_sketch_t sketch, 
                                    const double* fractions, size_t num_fractions,
                                    float* results) {
     if (!sketch || !fractions || !results || num_fractions == 0) {
@@ -148,8 +148,7 @@ void kll_float_sketch_get_quantiles(const kll_float_sketch_t* sketch,
     }
     
     try {
-        std::vector<double> frac_vec(fractions, fractions + num_fractions);
-        auto quantiles = static_cast<const kll_sketch<float>*>(sketch)->get_quantiles(frac_vec);
+        auto quantiles = static_cast<const kll_sketch<float>*>(sketch)->get_quantiles(fractions, static_cast<uint32_t>(num_fractions));
         for (size_t i = 0; i < quantiles.size() && i < num_fractions; ++i) {
             results[i] = quantiles[i];
         }
@@ -158,7 +157,7 @@ void kll_float_sketch_get_quantiles(const kll_float_sketch_t* sketch,
     }
 }
 
-void kll_float_sketch_get_quantiles_evenly_spaced(const kll_float_sketch_t* sketch, 
+void kll_float_sketch_get_quantiles_evenly_spaced(kll_float_sketch_t sketch, 
                                                   uint32_t num, float* results) {
     if (!sketch || !results || num == 0) {
         return;
@@ -175,35 +174,35 @@ void kll_float_sketch_get_quantiles_evenly_spaced(const kll_float_sketch_t* sket
 }
 
 // KLL Double Sketch implementation (similar to float sketch)
-kll_double_sketch_t* kll_double_sketch_new(void) {
+kll_double_sketch_t kll_double_sketch_new(void) {
     try {
-        return new kll_sketch<double>();
+        return static_cast<void*>(new kll_sketch<double>());
     } catch (...) {
         return nullptr;
     }
 }
 
-kll_double_sketch_t* kll_double_sketch_new_with_k(uint16_t k) {
+kll_double_sketch_t kll_double_sketch_new_with_k(uint16_t k) {
     try {
-        return new kll_sketch<double>(k);
+        return static_cast<void*>(new kll_sketch<double>(k));
     } catch (...) {
         return nullptr;
     }
 }
 
-void kll_double_sketch_delete(kll_double_sketch_t* sketch) {
+void kll_double_sketch_delete(kll_double_sketch_t sketch) {
     if (sketch) {
         delete static_cast<kll_sketch<double>*>(sketch);
     }
 }
 
-void kll_double_sketch_update(kll_double_sketch_t* sketch, double value) {
+void kll_double_sketch_update(kll_double_sketch_t sketch, double value) {
     if (sketch) {
         static_cast<kll_sketch<double>*>(sketch)->update(value);
     }
 }
 
-void kll_double_sketch_merge(kll_double_sketch_t* sketch, const kll_double_sketch_t* other) {
+void kll_double_sketch_merge(kll_double_sketch_t sketch, kll_double_sketch_t other) {
     if (sketch && other) {
         static_cast<kll_sketch<double>*>(sketch)->merge(
             *static_cast<const kll_sketch<double>*>(other)
@@ -211,70 +210,70 @@ void kll_double_sketch_merge(kll_double_sketch_t* sketch, const kll_double_sketc
     }
 }
 
-bool kll_double_sketch_is_empty(const kll_double_sketch_t* sketch) {
+bool kll_double_sketch_is_empty(kll_double_sketch_t sketch) {
     if (sketch) {
         return static_cast<const kll_sketch<double>*>(sketch)->is_empty();
     }
     return true;
 }
 
-uint16_t kll_double_sketch_get_k(const kll_double_sketch_t* sketch) {
+uint16_t kll_double_sketch_get_k(kll_double_sketch_t sketch) {
     if (sketch) {
         return static_cast<const kll_sketch<double>*>(sketch)->get_k();
     }
     return 0;
 }
 
-uint64_t kll_double_sketch_get_n(const kll_double_sketch_t* sketch) {
+uint64_t kll_double_sketch_get_n(kll_double_sketch_t sketch) {
     if (sketch) {
         return static_cast<const kll_sketch<double>*>(sketch)->get_n();
     }
     return 0;
 }
 
-uint32_t kll_double_sketch_get_num_retained(const kll_double_sketch_t* sketch) {
+uint32_t kll_double_sketch_get_num_retained(kll_double_sketch_t sketch) {
     if (sketch) {
         return static_cast<const kll_sketch<double>*>(sketch)->get_num_retained();
     }
     return 0;
 }
 
-bool kll_double_sketch_is_estimation_mode(const kll_double_sketch_t* sketch) {
+bool kll_double_sketch_is_estimation_mode(kll_double_sketch_t sketch) {
     if (sketch) {
         return static_cast<const kll_sketch<double>*>(sketch)->is_estimation_mode();
     }
     return false;
 }
 
-double kll_double_sketch_get_min_value(const kll_double_sketch_t* sketch) {
+double kll_double_sketch_get_min_value(kll_double_sketch_t sketch) {
     if (sketch) {
         return static_cast<const kll_sketch<double>*>(sketch)->get_min_value();
     }
     return 0.0;
 }
 
-double kll_double_sketch_get_max_value(const kll_double_sketch_t* sketch) {
+double kll_double_sketch_get_max_value(kll_double_sketch_t sketch) {
     if (sketch) {
         return static_cast<const kll_sketch<double>*>(sketch)->get_max_value();
     }
     return 0.0;
 }
 
-double kll_double_sketch_get_quantile(const kll_double_sketch_t* sketch, double fraction) {
+double kll_double_sketch_get_quantile(kll_double_sketch_t sketch, double fraction) {
     if (sketch) {
         return static_cast<const kll_sketch<double>*>(sketch)->get_quantile(fraction);
     }
     return 0.0;
 }
 
-double kll_double_sketch_get_rank(const kll_double_sketch_t* sketch, double value) {
+double kll_double_sketch_get_rank(kll_double_sketch_t sketch, double value) {
     if (sketch) {
         return static_cast<const kll_sketch<double>*>(sketch)->get_rank(value);
     }
     return 0.0;
 }
 
-uint8_t* kll_double_sketch_serialize(const kll_double_sketch_t* sketch, size_t* size) {
+uint8_t* kll_double_sketch_serialize(kll_double_sketch_t sketch, size_t* size) {
     if (!sketch || !size) {
         return nullptr;
     }
@@ -290,20 +289,20 @@ uint8_t* kll_double_sketch_serialize(const kll_double_sketch_t* sketch, size_t* 
     }
 }
 
-kll_double_sketch_t* kll_double_sketch_deserialize(const uint8_t* data, size_t size) {
+kll_double_sketch_t kll_double_sketch_deserialize(const uint8_t* data, size_t size) {
     if (!data || size == 0) {
         return nullptr;
     }
     
     try {
         auto sketch = kll_sketch<double>::deserialize(data, size);
-        return new kll_sketch<double>(std::move(sketch));
+        return static_cast<void*>(new kll_sketch<double>(std::move(sketch)));
     } catch (...) {
         return nullptr;
     }
 }
 
-void kll_double_sketch_get_quantiles(const kll_double_sketch_t* sketch, 
+void kll_double_sketch_get_quantiles(kll_double_sketch_t sketch, 
                                     const double* fractions, size_t num_fractions,
                                     double* results) {
     if (!sketch || !fractions || !results || num_fractions == 0) {
@@ -311,8 +310,7 @@ void kll_double_sketch_get_quantiles(const kll_double_sketch_t* sketch,
     }
     
     try {
-        std::vector<double> frac_vec(fractions, fractions + num_fractions);
-        auto quantiles = static_cast<const kll_sketch<double>*>(sketch)->get_quantiles(frac_vec);
+        auto quantiles = static_cast<const kll_sketch<double>*>(sketch)->get_quantiles(fractions, static_cast<uint32_t>(num_fractions));
         for (size_t i = 0; i < quantiles.size() && i < num_fractions; ++i) {
             results[i] = quantiles[i];
         }
@@ -321,7 +319,7 @@ void kll_double_sketch_get_quantiles(const kll_double_sketch_t* sketch,
     }
 }
 
-void kll_double_sketch_get_quantiles_evenly_spaced(const kll_double_sketch_t* sketch, 
+void kll_double_sketch_get_quantiles_evenly_spaced(kll_double_sketch_t sketch, 
                                                    uint32_t num, double* results) {
     if (!sketch || !results || num == 0) {
         return;

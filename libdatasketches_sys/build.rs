@@ -109,21 +109,18 @@ fn link_cpp(build: &mut Build) {
 }
 
 fn build_datasketches() -> Build {
-    // Option 1: Use cmake to build datasketches-cpp if it has CMakeLists.txt
-    // Option 2: Build directly with cc if we have individual cpp files
-    
     let cur_dir = env::current_dir().unwrap();
     let mut build = Build::new();
     
     // Include datasketches headers
     build.include(cur_dir.join("datasketches-cpp").join("common").join("include"));
+    build.include(cur_dir.join("datasketches-cpp").join("kll").join("include"));
     
-    // Add datasketches source files directly
-    let datasketches_src = cur_dir.join("datasketches-cpp");
-    if datasketches_src.exists() {
-        // Add KLL-specific source files
-        build.file(datasketches_src.join("kll.cpp"));
-    }
+    // Add the main directory to include path as well (for relative includes)
+    build.include(cur_dir.join("datasketches-cpp"));
+    
+    // DataSketches is header-only for the most part, but we need our wrapper
+    // No need to compile kll.cpp as it's header-only implementation
     
     build
 }

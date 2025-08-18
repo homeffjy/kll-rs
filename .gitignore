@@ -1,0 +1,16 @@
+*.swo
+*.swp
+*.orig
+*.bk
+*rlib
+tags
+
+.idea/
+out/
+*.iml
+.vscode
+
+target/
+Cargo.lock
+rust-toolchain
+rust-toolchain.toml

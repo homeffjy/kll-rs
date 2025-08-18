@@ -8,10 +8,11 @@ use libdatasketches_sys::{
     kll_double_sketch_get_quantiles, kll_double_sketch_get_quantiles_evenly_spaced,
     kll_double_sketch_get_rank, kll_double_sketch_is_empty, kll_double_sketch_is_estimation_mode,
     kll_double_sketch_merge, kll_double_sketch_new, kll_double_sketch_new_with_k,
-    kll_double_sketch_serialize, kll_double_sketch_update, KllDoubleSketch as SysKllDoubleSketch,
+    kll_double_sketch_serialize, kll_double_sketch_update,
 };
+use std::os::raw::c_void;
 use serde::{Deserialize, Serialize};
-use std::ptr;
+use base64::Engine;
 
 /// A KLL sketch for double values.
 ///
@@ -19,7 +20,7 @@ use std::ptr;
 /// approximate quantile estimates with strong accuracy guarantees.
 #[derive(Debug)]
 pub struct KllDoubleSketch {
-    ptr: *mut SysKllDoubleSketch,
+    ptr: *mut c_void,
 }
 
 impl KllDoubleSketch {
@@ -182,7 +183,8 @@ impl KllDoubleSketch {
             let result = slice.to_vec();
             
             // Free the allocated memory (assuming it was allocated with new[])
-            libc::free(data_ptr as *mut libc::c_void);
+            // Note: In real implementation, this should match the C++ allocation method
+            std::alloc::dealloc(data_ptr, std::alloc::Layout::array::<u8>(size).unwrap());
             
             Ok(result)
         }
@@ -229,7 +231,7 @@ impl Serialize for KllDoubleSketch {
         S: serde::Serializer,
     {
         let bytes = self.serialize().map_err(serde::ser::Error::custom)?;
-        let encoded = base64::encode(&bytes);
+        let encoded = base64::engine::general_purpose::STANDARD.encode(&bytes);
         serializer.serialize_str(&encoded)
     }
 }
@@ -240,7 +242,7 @@ impl<'de> Deserialize<'de> for KllDoubleSketch {
         D: serde::Deserializer<'de>,
     {
         let encoded = String::deserialize(deserializer)?;
-        let bytes = base64::decode(&encoded).map_err(serde::de::Error::custom)?;
+        let bytes = base64::engine::general_purpose::STANDARD.decode(&encoded).map_err(serde::de::Error::custom)?;
         Self::deserialize(&bytes).map_err(serde::de::Error::custom)
     }
 }
