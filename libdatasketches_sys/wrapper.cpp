@@ -85,14 +85,14 @@ bool kll_float_sketch_is_estimation_mode(kll_float_sketch_t sketch) {
 
 float kll_float_sketch_get_min_value(kll_float_sketch_t sketch) {
     if (sketch) {
-        return static_cast<const kll_sketch<float>*>(sketch)->get_min_value();
+        return static_cast<const kll_sketch<float>*>(sketch)->get_min_item();
     }
     return 0.0f;
 }
 
 float kll_float_sketch_get_max_value(kll_float_sketch_t sketch) {
     if (sketch) {
-        return static_cast<const kll_sketch<float>*>(sketch)->get_max_value();
+        return static_cast<const kll_sketch<float>*>(sketch)->get_max_item();
     }
     return 0.0f;
 }
@@ -148,9 +148,8 @@ void kll_float_sketch_get_quantiles(kll_float_sketch_t sketch,
     }
     
     try {
-        auto quantiles = static_cast<const kll_sketch<float>*>(sketch)->get_quantiles(fractions, static_cast<uint32_t>(num_fractions));
-        for (size_t i = 0; i < quantiles.size() && i < num_fractions; ++i) {
-            results[i] = quantiles[i];
+        for (size_t i = 0; i < num_fractions; ++i) {
+            results[i] = static_cast<const kll_sketch<float>*>(sketch)->get_quantile(fractions[i]);
         }
     } catch (...) {
         // Handle error appropriately
@@ -164,9 +163,9 @@ void kll_float_sketch_get_quantiles_evenly_spaced(kll_float_sketch_t sketch,
     }
     
     try {
-        auto quantiles = static_cast<const kll_sketch<float>*>(sketch)->get_quantiles(num);
-        for (size_t i = 0; i < quantiles.size() && i < num; ++i) {
-            results[i] = quantiles[i];
+        for (uint32_t i = 0; i < num; ++i) {
+            double fraction = static_cast<double>(i) / (num - 1);
+            results[i] = static_cast<const kll_sketch<float>*>(sketch)->get_quantile(fraction);
         }
     } catch (...) {
         // Handle error appropriately
@@ -247,14 +246,14 @@ bool kll_double_sketch_is_estimation_mode(kll_double_sketch_t sketch) {
 
 double kll_double_sketch_get_min_value(kll_double_sketch_t sketch) {
     if (sketch) {
-        return static_cast<const kll_sketch<double>*>(sketch)->get_min_value();
+        return static_cast<const kll_sketch<double>*>(sketch)->get_min_item();
     }
     return 0.0;
 }
 
 double kll_double_sketch_get_max_value(kll_double_sketch_t sketch) {
     if (sketch) {
-        return static_cast<const kll_sketch<double>*>(sketch)->get_max_value();
+        return static_cast<const kll_sketch<double>*>(sketch)->get_max_item();
     }
     return 0.0;
 }
@@ -310,9 +309,8 @@ void kll_double_sketch_get_quantiles(kll_double_sketch_t sketch,
     }
     
     try {
-        auto quantiles = static_cast<const kll_sketch<double>*>(sketch)->get_quantile(fractions, static_cast<uint32_t>(num_fractions));
-        for (size_t i = 0; i < quantiles.size() && i < num_fractions; ++i) {
-            results[i] = quantiles[i];
+        for (size_t i = 0; i < num_fractions; ++i) {
+            results[i] = static_cast<const kll_sketch<double>*>(sketch)->get_quantile(fractions[i]);
         }
     } catch (...) {
         // Handle error appropriately
@@ -326,9 +324,9 @@ void kll_double_sketch_get_quantiles_evenly_spaced(kll_double_sketch_t sketch,
     }
     
     try {
-        auto quantiles = static_cast<const kll_sketch<double>*>(sketch)->get_quantiles(num);
-        for (size_t i = 0; i < quantiles.size() && i < num; ++i) {
-            results[i] = quantiles[i];
+        for (uint32_t i = 0; i < num; ++i) {
+            double fraction = static_cast<double>(i) / (num - 1);
+            results[i] = static_cast<const kll_sketch<double>*>(sketch)->get_quantile(fraction);
         }
     } catch (...) {
         // Handle error appropriately
