@@ -1,18 +1,18 @@
 [package]
-name = "dsrs_kll"
+name = "kll-rs"
 version = "0.1.0"
 authors = ["Jingyang Fu <homeffjy@gmail.com>"]
 edition = "2024"
 description = "KLL quantiles sketch from Apache DataSketches for Rust"
-homepage = "https://github.com/homeffjy/dsrs_kll"
-repository = "https://github.com/homeffjy/dsrs_kll"
+homepage = "https://github.com/homeffjy/kll-rs"
+repository = "https://github.com/homeffjy/kll-rs"
 readme = "README.md"
 keywords = ["sketch", "kll", "quantiles", "streaming", "percentiles"]
 categories = ["algorithms", "mathematics", "command-line-utilities"]
 license = "Apache-2.0"
 
 [dependencies]
-libdatasketches_sys = { path = "libdatasketches_sys" }
+libdatasketches_sys = { path = "libdatasketches_sys", version = "0.1.0" }
 serde = { version = "1.0", features = ["derive"] }
 rmp-serde = "1.1"
 base64 = "0.22.1"

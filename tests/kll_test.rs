@@ -1,4 +1,4 @@
-use dsrs_kll::{KllDoubleSketch, KllFloatSketch};
+use kll_rs::{KllDoubleSketch, KllFloatSketch};
 
 #[test]
 fn test_float_sketch_basic_functionality() {
