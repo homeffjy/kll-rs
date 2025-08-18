@@ -1,0 +1,3 @@
+[submodule "libdatasketches_sys/datasketches-cpp"]
+	path = libdatasketches_sys/datasketches-cpp
+	url = https://github.com/apache/datasketches-cpp.git

@@ -20,7 +20,7 @@ pub struct KllFloatSketch(c_void);
 pub struct KllDoubleSketch(c_void);
 
 // Re-export the generated functions with proper types
-extern "C" {
+unsafe extern "C" {
     // KLL Float Sketch functions
     pub fn kll_float_sketch_new() -> *mut c_void;
     pub fn kll_float_sketch_new_with_k(k: u16) -> *mut c_void;

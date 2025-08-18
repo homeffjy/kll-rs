@@ -310,7 +310,7 @@ void kll_double_sketch_get_quantiles(kll_double_sketch_t sketch,
     }
     
     try {
-        auto quantiles = static_cast<const kll_sketch<double>*>(sketch)->get_quantiles(fractions, static_cast<uint32_t>(num_fractions));
+        auto quantiles = static_cast<const kll_sketch<double>*>(sketch)->get_quantile(fractions, static_cast<uint32_t>(num_fractions));
         for (size_t i = 0; i < quantiles.size() && i < num_fractions; ++i) {
             results[i] = quantiles[i];
         }

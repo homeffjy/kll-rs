@@ -3,7 +3,6 @@ extern crate cc;
 extern crate cmake;
 
 use cc::Build;
-use cmake::Config;
 use std::path::{Path, PathBuf};
 use std::{env, str};
 
