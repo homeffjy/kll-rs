@@ -224,6 +224,23 @@ impl Drop for KllFloatSketch {
 unsafe impl Send for KllFloatSketch {}
 unsafe impl Sync for KllFloatSketch {}
 
+impl Clone for KllFloatSketch {
+    /// Creates a clone of the sketch by serializing and deserializing.
+    /// 
+    /// This performs a deep copy of the underlying C++ sketch data structure.
+    /// While not the most efficient approach, it ensures a complete and accurate copy
+    /// since the C++ library doesn't expose a direct copy constructor.
+    fn clone(&self) -> Self {
+        // Serialize the current sketch
+        let serialized_data = self.serialize()
+            .expect("Failed to serialize sketch during clone operation");
+        
+        // Deserialize into a new sketch instance
+        Self::deserialize(&serialized_data)
+            .expect("Failed to deserialize sketch during clone operation")
+    }
+}
+
 // Implement Serialize and Deserialize for serde support
 impl Serialize for KllFloatSketch {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -286,5 +303,44 @@ mod tests {
         
         assert_eq!(sketch.get_n(), deserialized.get_n());
         assert_eq!(sketch.get_k(), deserialized.get_k());
+    }
+
+    #[test]
+    fn test_clone() {
+        let mut original = KllFloatSketch::new().unwrap();
+        
+        // Add some data to the original sketch
+        for i in 1..=1000 {
+            original.update(i as f32);
+        }
+        
+        // Clone the sketch
+        let cloned = original.clone();
+        
+        // Verify the clone has the same properties
+        assert_eq!(original.get_n(), cloned.get_n());
+        assert_eq!(original.get_k(), cloned.get_k());
+        assert_eq!(original.get_num_retained(), cloned.get_num_retained());
+        assert_eq!(original.is_empty(), cloned.is_empty());
+        assert_eq!(original.is_estimation_mode(), cloned.is_estimation_mode());
+        
+        // Compare some quantiles to ensure data integrity
+        for fraction in [0.25, 0.5, 0.75, 0.9] {
+            let original_quantile = original.get_quantile(fraction);
+            let cloned_quantile = cloned.get_quantile(fraction);
+            assert!((original_quantile - cloned_quantile).abs() < 1e-6, 
+                   "Quantiles differ: original={}, cloned={}", original_quantile, cloned_quantile);
+        }
+        
+        // Verify they are independent - modifying one doesn't affect the other
+        let original_n_before = original.get_n();
+        let cloned_n_before = cloned.get_n();
+        
+        // Modify the original
+        original.update(999999.0);
+        
+        // Cloned should remain unchanged
+        assert_eq!(cloned.get_n(), cloned_n_before);
+        assert_eq!(original.get_n(), original_n_before + 1);
     }
 }

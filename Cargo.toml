@@ -1,6 +1,6 @@
 [package]
 name = "kll-rs"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Jingyang Fu <homeffjy@gmail.com>"]
 edition = "2024"
 description = "KLL quantiles sketch from Apache DataSketches for Rust"
