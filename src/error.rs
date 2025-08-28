@@ -24,7 +24,9 @@ impl fmt::Display for DataSketchesError {
         match self {
             DataSketchesError::CreationError(msg) => write!(f, "Sketch creation error: {}", msg),
             DataSketchesError::SerializationError(msg) => write!(f, "Serialization error: {}", msg),
-            DataSketchesError::DeserializationError(msg) => write!(f, "Deserialization error: {}", msg),
+            DataSketchesError::DeserializationError(msg) => {
+                write!(f, "Deserialization error: {}", msg)
+            }
             DataSketchesError::InvalidParameter(msg) => write!(f, "Invalid parameter: {}", msg),
             DataSketchesError::NullPointer => write!(f, "Null pointer encountered"),
             DataSketchesError::Unknown(msg) => write!(f, "Unknown error: {}", msg),

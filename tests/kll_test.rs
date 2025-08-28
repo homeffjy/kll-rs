@@ -63,21 +63,21 @@ fn test_double_sketch_basic_functionality() {
 #[test]
 fn test_serialization() {
     let mut sketch = KllFloatSketch::new().unwrap();
-    
+
     for i in 1..=100 {
         sketch.update(i as f32);
     }
-    
+
     let original_median = sketch.get_quantile(0.5);
     let serialized = sketch.serialize().unwrap();
     let deserialized = KllFloatSketch::deserialize(&serialized).unwrap();
-    
+
     assert_eq!(sketch.get_n(), deserialized.get_n());
     assert_eq!(sketch.get_k(), deserialized.get_k());
-    
+
     let deserialized_median = deserialized.get_quantile(0.5);
     assert!((original_median - deserialized_median).abs() < 0.1);
-    
+
     println!("Serialization test passed!");
 }
 
@@ -90,7 +90,7 @@ fn test_merge() {
     for i in 1..=50 {
         sketch1.update(i as f32);
     }
-    
+
     for i in 51..=100 {
         sketch2.update(i as f32);
     }
@@ -101,7 +101,7 @@ fn test_merge() {
     assert_eq!(sketch1.get_n(), 100);
     assert_eq!(sketch1.get_min_value(), 1.0);
     assert_eq!(sketch1.get_max_value(), 100.0);
-    
+
     println!("Merge test passed!");
 }
 
@@ -109,6 +109,6 @@ fn test_merge() {
 fn test_custom_k() {
     let sketch = KllFloatSketch::new_with_k(128).unwrap();
     assert_eq!(sketch.get_k(), 128);
-    
+
     println!("Custom k test passed!");
 }

@@ -1,6 +1,7 @@
 //! KLL Float Sketch implementation.
 
 use crate::error::{DataSketchesError, Result};
+use base64::Engine;
 use libdatasketches_sys::{
     kll_float_sketch_delete, kll_float_sketch_deserialize, kll_float_sketch_get_k,
     kll_float_sketch_get_max_value, kll_float_sketch_get_min_value, kll_float_sketch_get_n,
@@ -10,9 +11,8 @@ use libdatasketches_sys::{
     kll_float_sketch_merge, kll_float_sketch_new, kll_float_sketch_new_with_k,
     kll_float_sketch_serialize, kll_float_sketch_update,
 };
-use std::os::raw::c_void;
 use serde::{Deserialize, Serialize};
-use base64::Engine;
+use std::os::raw::c_void;
 
 /// A KLL sketch for float values.
 ///
@@ -48,7 +48,7 @@ impl KllFloatSketch {
                 "k must be at least 8".to_string(),
             ));
         }
-        
+
         unsafe {
             let ptr = kll_float_sketch_new_with_k(k);
             if ptr.is_null() {
@@ -73,7 +73,7 @@ impl KllFloatSketch {
         if other.ptr.is_null() {
             return Err(DataSketchesError::NullPointer);
         }
-        
+
         unsafe {
             kll_float_sketch_merge(self.ptr, other.ptr);
         }
@@ -172,7 +172,7 @@ impl KllFloatSketch {
         unsafe {
             let mut size = 0;
             let data_ptr = kll_float_sketch_serialize(self.ptr, &mut size);
-            
+
             if data_ptr.is_null() {
                 return Err(DataSketchesError::SerializationError(
                     "Failed to serialize sketch".to_string(),
@@ -181,11 +181,11 @@ impl KllFloatSketch {
 
             let slice = std::slice::from_raw_parts(data_ptr, size);
             let result = slice.to_vec();
-            
+
             // Free the allocated memory (assuming it was allocated with new[])
             // Note: In real implementation, this should match the C++ allocation method
             std::alloc::dealloc(data_ptr, std::alloc::Layout::array::<u8>(size).unwrap());
-            
+
             Ok(result)
         }
     }
@@ -226,15 +226,16 @@ unsafe impl Sync for KllFloatSketch {}
 
 impl Clone for KllFloatSketch {
     /// Creates a clone of the sketch by serializing and deserializing.
-    /// 
+    ///
     /// This performs a deep copy of the underlying C++ sketch data structure.
     /// While not the most efficient approach, it ensures a complete and accurate copy
     /// since the C++ library doesn't expose a direct copy constructor.
     fn clone(&self) -> Self {
         // Serialize the current sketch
-        let serialized_data = self.serialize()
+        let serialized_data = self
+            .serialize()
             .expect("Failed to serialize sketch during clone operation");
-        
+
         // Deserialize into a new sketch instance
         Self::deserialize(&serialized_data)
             .expect("Failed to deserialize sketch during clone operation")
@@ -259,7 +260,9 @@ impl<'de> Deserialize<'de> for KllFloatSketch {
         D: serde::Deserializer<'de>,
     {
         let encoded = String::deserialize(deserializer)?;
-        let bytes = base64::engine::general_purpose::STANDARD.decode(&encoded).map_err(serde::de::Error::custom)?;
+        let bytes = base64::engine::general_purpose::STANDARD
+            .decode(&encoded)
+            .map_err(serde::de::Error::custom)?;
         Self::deserialize(&bytes).map_err(serde::de::Error::custom)
     }
 }
@@ -278,14 +281,14 @@ mod tests {
     #[test]
     fn test_update_and_query() {
         let mut sketch = KllFloatSketch::new().unwrap();
-        
+
         for i in 1..=1000 {
             sketch.update(i as f32);
         }
-        
+
         assert!(!sketch.is_empty());
         assert_eq!(sketch.get_n(), 1000);
-        
+
         let median = sketch.get_quantile(0.5);
         assert!((median - 500.0).abs() < 50.0); // Allow some error
     }
@@ -293,14 +296,14 @@ mod tests {
     #[test]
     fn test_serialization() {
         let mut sketch = KllFloatSketch::new().unwrap();
-        
+
         for i in 1..=100 {
             sketch.update(i as f32);
         }
-        
+
         let serialized = sketch.serialize().unwrap();
         let deserialized = KllFloatSketch::deserialize(&serialized).unwrap();
-        
+
         assert_eq!(sketch.get_n(), deserialized.get_n());
         assert_eq!(sketch.get_k(), deserialized.get_k());
     }
@@ -308,37 +311,41 @@ mod tests {
     #[test]
     fn test_clone() {
         let mut original = KllFloatSketch::new().unwrap();
-        
+
         // Add some data to the original sketch
         for i in 1..=1000 {
             original.update(i as f32);
         }
-        
+
         // Clone the sketch
         let cloned = original.clone();
-        
+
         // Verify the clone has the same properties
         assert_eq!(original.get_n(), cloned.get_n());
         assert_eq!(original.get_k(), cloned.get_k());
         assert_eq!(original.get_num_retained(), cloned.get_num_retained());
         assert_eq!(original.is_empty(), cloned.is_empty());
         assert_eq!(original.is_estimation_mode(), cloned.is_estimation_mode());
-        
+
         // Compare some quantiles to ensure data integrity
         for fraction in [0.25, 0.5, 0.75, 0.9] {
             let original_quantile = original.get_quantile(fraction);
             let cloned_quantile = cloned.get_quantile(fraction);
-            assert!((original_quantile - cloned_quantile).abs() < 1e-6, 
-                   "Quantiles differ: original={}, cloned={}", original_quantile, cloned_quantile);
+            assert!(
+                (original_quantile - cloned_quantile).abs() < 1e-6,
+                "Quantiles differ: original={}, cloned={}",
+                original_quantile,
+                cloned_quantile
+            );
         }
-        
+
         // Verify they are independent - modifying one doesn't affect the other
         let original_n_before = original.get_n();
         let cloned_n_before = cloned.get_n();
-        
+
         // Modify the original
         original.update(999999.0);
-        
+
         // Cloned should remain unchanged
         assert_eq!(cloned.get_n(), cloned_n_before);
         assert_eq!(original.get_n(), original_n_before + 1);

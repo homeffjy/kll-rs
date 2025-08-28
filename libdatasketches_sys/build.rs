@@ -37,7 +37,8 @@ fn config_binding_path() {
             }
         }
         _ => {
-            file_path = PathBuf::from(env::var("OUT_DIR").unwrap()).join("datasketches-bindings.rs");
+            file_path =
+                PathBuf::from(env::var("OUT_DIR").unwrap()).join("datasketches-bindings.rs");
             bindgen_datasketches(&file_path);
         }
     };
@@ -51,14 +52,14 @@ fn main() {
     println!("cargo:rerun-if-env-changed=UPDATE_BIND");
 
     let mut build = build_datasketches();
-    
+
     build.cpp(true).file("wrapper.cpp");
     if env::var("CARGO_CFG_TARGET_OS").unwrap() != "windows" {
         build.flag("-std=c++14");
     }
     link_cpp(&mut build);
     build.warnings(false).compile("libdatasketches.a");
-    
+
     config_binding_path();
 }
 
@@ -72,7 +73,7 @@ fn link_cpp(build: &mut Build) {
         // Don't link to c++ statically on windows.
         return;
     };
-    
+
     let output = tool
         .to_command()
         .arg("--print-file-name")
@@ -83,7 +84,7 @@ fn link_cpp(build: &mut Build) {
         // fallback to dynamically
         return;
     }
-    
+
     let path = match str::from_utf8(&output.stdout) {
         Ok(path) => PathBuf::from(path),
         Err(_) => return,
@@ -91,7 +92,7 @@ fn link_cpp(build: &mut Build) {
     if !path.is_absolute() {
         return;
     }
-    
+
     // remove lib prefix and .a postfix.
     let libname = &stdlib[3..stdlib.len() - 2];
     // optional static linking
@@ -110,16 +111,21 @@ fn link_cpp(build: &mut Build) {
 fn build_datasketches() -> Build {
     let cur_dir = env::current_dir().unwrap();
     let mut build = Build::new();
-    
+
     // Include datasketches headers
-    build.include(cur_dir.join("datasketches-cpp").join("common").join("include"));
+    build.include(
+        cur_dir
+            .join("datasketches-cpp")
+            .join("common")
+            .join("include"),
+    );
     build.include(cur_dir.join("datasketches-cpp").join("kll").join("include"));
-    
+
     // Add the main directory to include path as well (for relative includes)
     build.include(cur_dir.join("datasketches-cpp"));
-    
+
     // DataSketches is header-only for the most part, but we need our wrapper
     // No need to compile kll.cpp as it's header-only implementation
-    
+
     build
 }
