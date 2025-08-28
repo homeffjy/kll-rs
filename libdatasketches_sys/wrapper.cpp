@@ -28,6 +28,20 @@ kll_float_sketch_t kll_float_sketch_new_with_k(uint16_t k) {
     }
 }
 
+kll_float_sketch_t kll_float_sketch_copy(kll_float_sketch_t sketch) {
+    if (!sketch) {
+        return nullptr;
+    }
+    
+    try {
+        // Use copy constructor to create a new sketch
+        const kll_sketch<float>* original = static_cast<const kll_sketch<float>*>(sketch);
+        return static_cast<void*>(new kll_sketch<float>(*original));
+    } catch (...) {
+        return nullptr;
+    }
+}
+
 void kll_float_sketch_delete(kll_float_sketch_t sketch) {
     if (sketch) {
         delete static_cast<kll_sketch<float>*>(sketch);
@@ -184,6 +198,20 @@ kll_double_sketch_t kll_double_sketch_new(void) {
 kll_double_sketch_t kll_double_sketch_new_with_k(uint16_t k) {
     try {
         return static_cast<void*>(new kll_sketch<double>(k));
+    } catch (...) {
+        return nullptr;
+    }
+}
+
+kll_double_sketch_t kll_double_sketch_copy(kll_double_sketch_t sketch) {
+    if (!sketch) {
+        return nullptr;
+    }
+    
+    try {
+        // Use copy constructor to create a new sketch
+        const kll_sketch<double>* original = static_cast<const kll_sketch<double>*>(sketch);
+        return static_cast<void*>(new kll_sketch<double>(*original));
     } catch (...) {
         return nullptr;
     }

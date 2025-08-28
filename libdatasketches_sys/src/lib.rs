@@ -24,6 +24,7 @@ unsafe extern "C" {
     // KLL Float Sketch functions
     pub fn kll_float_sketch_new() -> *mut c_void;
     pub fn kll_float_sketch_new_with_k(k: u16) -> *mut c_void;
+    pub fn kll_float_sketch_copy(sketch: *mut c_void) -> *mut c_void;
     pub fn kll_float_sketch_delete(sketch: *mut c_void);
 
     pub fn kll_float_sketch_update(sketch: *mut c_void, value: f32);
@@ -58,6 +59,7 @@ unsafe extern "C" {
     // KLL Double Sketch functions
     pub fn kll_double_sketch_new() -> *mut c_void;
     pub fn kll_double_sketch_new_with_k(k: u16) -> *mut c_void;
+    pub fn kll_double_sketch_copy(sketch: *mut c_void) -> *mut c_void;
     pub fn kll_double_sketch_delete(sketch: *mut c_void);
 
     pub fn kll_double_sketch_update(sketch: *mut c_void, value: f64);

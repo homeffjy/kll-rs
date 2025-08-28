@@ -21,6 +21,7 @@ typedef void* kll_double_sketch_t;
 // KLL Float Sketch functions
 kll_float_sketch_t kll_float_sketch_new(void);
 kll_float_sketch_t kll_float_sketch_new_with_k(uint16_t k);
+kll_float_sketch_t kll_float_sketch_copy(kll_float_sketch_t sketch);
 void kll_float_sketch_delete(kll_float_sketch_t sketch);
 
 void kll_float_sketch_update(kll_float_sketch_t sketch, float value);
@@ -51,6 +52,7 @@ void kll_float_sketch_get_quantiles_evenly_spaced(kll_float_sketch_t sketch,
 // KLL Double Sketch functions  
 kll_double_sketch_t kll_double_sketch_new(void);
 kll_double_sketch_t kll_double_sketch_new_with_k(uint16_t k);
+kll_double_sketch_t kll_double_sketch_copy(kll_double_sketch_t sketch);
 void kll_double_sketch_delete(kll_double_sketch_t sketch);
 
 void kll_double_sketch_update(kll_double_sketch_t sketch, double value);
