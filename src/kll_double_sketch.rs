@@ -3,9 +3,9 @@
 use crate::error::{DataSketchesError, Result};
 use base64::Engine;
 use libdatasketches_sys::{
-    kll_double_sketch_copy, kll_double_sketch_delete, kll_double_sketch_deserialize, 
-    kll_double_sketch_get_k, kll_double_sketch_get_max_value, kll_double_sketch_get_min_value, 
-    kll_double_sketch_get_n, kll_double_sketch_get_num_retained, kll_double_sketch_get_quantile,
+    kll_double_sketch_delete, kll_double_sketch_deserialize, kll_double_sketch_get_k,
+    kll_double_sketch_get_max_value, kll_double_sketch_get_min_value, kll_double_sketch_get_n,
+    kll_double_sketch_get_num_retained, kll_double_sketch_get_quantile,
     kll_double_sketch_get_quantiles, kll_double_sketch_get_quantiles_evenly_spaced,
     kll_double_sketch_get_rank, kll_double_sketch_is_empty, kll_double_sketch_is_estimation_mode,
     kll_double_sketch_merge, kll_double_sketch_new, kll_double_sketch_new_with_k,
@@ -129,12 +129,12 @@ impl KllDoubleSketch {
         if self.is_empty() {
             return f64::NAN;
         }
-        
+
         // Validate fraction parameter to prevent C++ exceptions
         if !fraction.is_finite() || fraction < 0.0 || fraction > 1.0 {
             return f64::NAN;
         }
-        
+
         unsafe { kll_double_sketch_get_quantile(self.ptr, fraction) }
     }
 
@@ -227,22 +227,13 @@ impl KllDoubleSketch {
         }
     }
 
-    /// Creates a copy of the sketch using the C++ copy constructor.
-    /// 
-    /// This is more efficient than the Clone trait implementation which uses
-    /// serialization/deserialization, as it directly uses the underlying C++
-    /// copy constructor.
+    /// Creates a copy of the sketch using serialization/deserialization.
+    ///
+    /// This creates a deep copy of the sketch by serializing it to bytes
+    /// and then deserializing it back to a new sketch instance.
     pub fn copy(&self) -> Result<Self> {
-        unsafe {
-            let ptr = kll_double_sketch_copy(self.ptr);
-            if ptr.is_null() {
-                Err(DataSketchesError::CreationError(
-                    "Failed to copy sketch".to_string(),
-                ))
-            } else {
-                Ok(KllDoubleSketch { ptr })
-            }
-        }
+        let serialized = self.serialize()?;
+        Self::deserialize(&serialized)
     }
 }
 
@@ -266,11 +257,10 @@ unsafe impl Send for KllDoubleSketch {}
 unsafe impl Sync for KllDoubleSketch {}
 
 impl Clone for KllDoubleSketch {
-    /// Creates a clone of the sketch using the C++ copy constructor.
+    /// Creates a clone of the sketch using serialization and deserialization.
     ///
-    /// This performs an efficient deep copy of the underlying C++ sketch data structure
-    /// by directly using the C++ copy constructor, which is much faster than the previous
-    /// approach of serialization and deserialization.
+    /// This performs a deep copy of the underlying C++ sketch data structure
+    /// by serializing the sketch to bytes and then deserializing it back.
     fn clone(&self) -> Self {
         self.copy()
             .expect("Failed to copy sketch during clone operation")
