@@ -3,9 +3,9 @@
 use crate::error::{DataSketchesError, Result};
 use base64::Engine;
 use libdatasketches_sys::{
-    kll_double_sketch_delete, kll_double_sketch_deserialize, kll_double_sketch_get_k,
-    kll_double_sketch_get_max_value, kll_double_sketch_get_min_value, kll_double_sketch_get_n,
-    kll_double_sketch_get_num_retained, kll_double_sketch_get_quantile,
+    kll_double_sketch_copy, kll_double_sketch_delete, kll_double_sketch_deserialize,
+    kll_double_sketch_get_k, kll_double_sketch_get_max_value, kll_double_sketch_get_min_value,
+    kll_double_sketch_get_n, kll_double_sketch_get_num_retained, kll_double_sketch_get_quantile,
     kll_double_sketch_get_quantiles, kll_double_sketch_get_quantiles_evenly_spaced,
     kll_double_sketch_get_rank, kll_double_sketch_is_empty, kll_double_sketch_is_estimation_mode,
     kll_double_sketch_merge, kll_double_sketch_new, kll_double_sketch_new_with_k,
@@ -227,13 +227,21 @@ impl KllDoubleSketch {
         }
     }
 
-    /// Creates a copy of the sketch using serialization/deserialization.
+    /// Creates a copy of the sketch using the native copy constructor.
     ///
-    /// This creates a deep copy of the sketch by serializing it to bytes
-    /// and then deserializing it back to a new sketch instance.
+    /// This creates a deep copy of the sketch using the underlying C++
+    /// copy constructor, which is more efficient than serialization/deserialization.
     pub fn copy(&self) -> Result<Self> {
-        let serialized = self.serialize()?;
-        Self::deserialize(&serialized)
+        unsafe {
+            let ptr = kll_double_sketch_copy(self.ptr);
+            if ptr.is_null() {
+                Err(DataSketchesError::CreationError(
+                    "Failed to copy sketch".to_string(),
+                ))
+            } else {
+                Ok(KllDoubleSketch { ptr })
+            }
+        }
     }
 }
 
@@ -257,10 +265,10 @@ unsafe impl Send for KllDoubleSketch {}
 unsafe impl Sync for KllDoubleSketch {}
 
 impl Clone for KllDoubleSketch {
-    /// Creates a clone of the sketch using serialization and deserialization.
+    /// Creates a clone of the sketch using the native copy constructor.
     ///
     /// This performs a deep copy of the underlying C++ sketch data structure
-    /// by serializing the sketch to bytes and then deserializing it back.
+    /// using the C++ copy constructor, which is more efficient than serialization.
     fn clone(&self) -> Self {
         self.copy()
             .expect("Failed to copy sketch during clone operation")

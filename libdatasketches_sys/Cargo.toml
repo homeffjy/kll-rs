@@ -1,6 +1,6 @@
 [package]
 name = "libdatasketches_sys"
-version = "0.1.0"
+version = "0.1.3"
 edition = "2021"
 authors = ["Jingyang Fu <homeffjy@gmail.com>"]
 build = "build.rs"
