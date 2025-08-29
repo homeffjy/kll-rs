@@ -107,11 +107,17 @@ impl KllDoubleSketch {
 
     /// Returns the minimum value seen by the sketch.
     pub fn get_min_value(&self) -> f64 {
+        if self.is_empty() {
+            return f64::NAN;
+        }
         unsafe { kll_double_sketch_get_min_value(self.ptr) }
     }
 
     /// Returns the maximum value seen by the sketch.
     pub fn get_max_value(&self) -> f64 {
+        if self.is_empty() {
+            return f64::NAN;
+        }
         unsafe { kll_double_sketch_get_max_value(self.ptr) }
     }
 
@@ -123,6 +129,12 @@ impl KllDoubleSketch {
         if self.is_empty() {
             return f64::NAN;
         }
+        
+        // Validate fraction parameter to prevent C++ exceptions
+        if !fraction.is_finite() || fraction < 0.0 || fraction > 1.0 {
+            return f64::NAN;
+        }
+        
         unsafe { kll_double_sketch_get_quantile(self.ptr, fraction) }
     }
 
@@ -130,6 +142,9 @@ impl KllDoubleSketch {
     ///
     /// The rank is the fraction of values in the sketch that are less than or equal to the given value.
     pub fn get_rank(&self, value: f64) -> f64 {
+        if self.is_empty() {
+            return f64::NAN;
+        }
         unsafe { kll_double_sketch_get_rank(self.ptr, value) }
     }
 
@@ -137,6 +152,14 @@ impl KllDoubleSketch {
     pub fn get_quantiles(&self, fractions: &[f64]) -> Vec<f64> {
         if self.is_empty() || fractions.is_empty() {
             return vec![];
+        }
+
+        // Validate all fractions to prevent C++ exceptions
+        for &fraction in fractions {
+            if !fraction.is_finite() || fraction < 0.0 || fraction > 1.0 {
+                // If any fraction is invalid, return NaN for all results
+                return vec![f64::NAN; fractions.len()];
+            }
         }
 
         let mut results = vec![0.0f64; fractions.len()];
@@ -182,9 +205,9 @@ impl KllDoubleSketch {
             let slice = std::slice::from_raw_parts(data_ptr, size);
             let result = slice.to_vec();
 
-            // Free the allocated memory (assuming it was allocated with new[])
-            // Note: In real implementation, this should match the C++ allocation method
-            std::alloc::dealloc(data_ptr, std::alloc::Layout::array::<u8>(size).unwrap());
+            // Use libc::free to match the C++ new[] allocation
+            // The C++ side uses new uint8_t[], so we need to use the corresponding free
+            libc::free(data_ptr as *mut libc::c_void);
 
             Ok(result)
         }
